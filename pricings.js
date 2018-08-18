@@ -32,7 +32,7 @@ function addPricingByAdmin(req,res){
 			q='create table pricing_localities(id int primary key auto_increment, name varchar(100) unique null,\
 			 type varchar(10) null,seller varchar(10) null ,start varchar(100) null, expiry varchar(100) null,city_type varchar(10) null,currency varchar(100) null,country \
 			 varchar(100) null ,categories varchar(20) null,localities_allowed int null, max_pincodes_allowed int null,\
-			 free_days int null, validity int null, amount float null );';
+			 free_days int null, validity int null, amount float null,status varchar(10) null );';
 			 conn.query(q, e=>{
 			 	if (e) {console.log('[IGNORE] err while creating table pricing_localities. Might Already Exist.');}
 			 	else
@@ -58,8 +58,8 @@ function addPricingByAdmin(req,res){
 			country=req.body.country;
 		console.log(name+' '+type+' '+expiry+' '+num_of_localities+' '+
 			max_num_pincodes+' '+free_days+' '+validity+' '+amount)
-		q = 'insert into pricing_localities(name,type,seller,start,expiry,city_type,currency,country,categories,localities_allowed,max_pincodes_allowed,free_days,validity,amount)\
-		  values("'+name+'","'+type+'","'+seller+'","'+start+'","'+expiry+'","'+city_type+'","'+currency+'","'+country+'","'+categories+'",'+num_of_localities+','+max_num_pincodes+','+free_days+','+validity+','+amount+');'
+		q = 'insert into pricing_localities(name,type,seller,start,expiry,city_type,currency,country,categories,localities_allowed,max_pincodes_allowed,free_days,validity,amount,status)\
+		  values("'+name+'","'+type+'","'+seller+'","'+start+'","'+expiry+'","'+city_type+'","'+currency+'","'+country+'","'+categories+'",'+num_of_localities+','+max_num_pincodes+','+free_days+','+validity+','+amount+',"active");'
 		conn.query(q, e=>{
 			if (e) {console.log('[ERR] err while inserting into pricing_localities');throw e;isErr=true;uniqueErr=true;console.log(isErr)}
 			else
@@ -83,7 +83,7 @@ function addPricingByAdmin(req,res){
 			q='create table pricing_cities(id int primary key auto_increment, name varchar(100) unique null,\
 			 type varchar(10) null,seller varchar(10) null,start varchar(100) null,expiry varchar(100) null,currency varchar(100) null,country varchar(100) null ,\
 			 categories varchar(20) null, cities_allowed int null, city_type varchar(10) null,\
-			 free_days int null, validity int null, amount float null );';
+			 free_days int null, validity int null, amount float null,status varchar(10) null );';
 			 conn.query(q, e=>{
 			 	if (e) {console.log('[IGNORE] err while creating table pricing_cities. Might Already Exist.');}
 			 	else
@@ -105,8 +105,8 @@ function addPricingByAdmin(req,res){
 			free_days = req.body.freedays,
 			validity = req.body.expiryspan,
 			amount = req.body.amount;
-		q = 'insert into pricing_cities(name,type,seller,start,expiry,currency,country,categories,cities_allowed,city_type,free_days,validity,amount)\
-		 values("'+name+'","'+type+'","'+seller+'","'+start+'","'+expiry+'","'+currency+'","'+country+'","'+categories+'",'+num_of_cities+',"'+city_type+'",'+free_days+','+validity+','+amount+');'
+		q = 'insert into pricing_cities(name,type,seller,start,expiry,currency,country,categories,cities_allowed,city_type,free_days,validity,amount,status)\
+		 values("'+name+'","'+type+'","'+seller+'","'+start+'","'+expiry+'","'+currency+'","'+country+'","'+categories+'",'+num_of_cities+',"'+city_type+'",'+free_days+','+validity+','+amount+',"active");'
 		conn.query(q, e=>{
 			if (e) {console.log('[ERR] err while inserting into pricing_cities');throw e;isErr=true;uniqueErr=true;}
 			else{
@@ -131,7 +131,7 @@ function addPricingByAdmin(req,res){
 			q='create table pricing_states(id int primary key auto_increment, name varchar(100) unique null,\
 			 type varchar(10) null,seller varchar(10) null,start varchar(100) null,expiry varchar(100) null,currency varchar(100) null,country varchar(100) null ,\
 			 categories varchar(20) null, states_allowed int null, \
-			 free_days int null, validity int null, amount float null );';
+			 free_days int null, validity int null, amount float null,status varchar(10) null );';
 			 conn.query(q, e=>{
 			 	if (e) {console.log('[IGNORE] err while creating table pricing_states. Might Already Exist.');}
 			 	else
@@ -153,8 +153,8 @@ function addPricingByAdmin(req,res){
 			validity = req.body.expiryspan,
 			amount = req.body.amount;
 			console.log(name + type+expiry+num_of_states+start+currency+categories+country+free_days+validity+amount);
-		q = 'insert into pricing_states(name,type,seller,start,expiry,currency,country,categories,states_allowed,free_days,validity,amount)\
-		 values("'+name+'","'+type+'","'+seller+'","'+start+'","'+expiry+'","'+currency+'","'+country+'","'+categories+'",'+num_of_states+','+free_days+','+validity+','+amount+');'
+		q = 'insert into pricing_states(name,type,seller,start,expiry,currency,country,categories,states_allowed,free_days,validity,amount,status)\
+		 values("'+name+'","'+type+'","'+seller+'","'+start+'","'+expiry+'","'+currency+'","'+country+'","'+categories+'",'+num_of_states+','+free_days+','+validity+','+amount+',"active");'
 		conn.query(q, e=>{
 			if (e) {console.log('[ERR] err while inserting into pricing_states');throw e;isErr=true;uniqueErr=true;}
 			else{
@@ -181,7 +181,7 @@ function addPricingByAdmin(req,res){
 			q='create table pricing_nations(id int primary key auto_increment, name varchar(100) unique null,\
 			 type varchar(10) null,seller varchar(10) null,start varchar(100) null,expiry varchar(100) null,currency varchar(100) null,country varchar(100) null ,\
 			 categories varchar(20) null, nations_allowed int null, \
-			 free_days int null, validity int null, amount float null );';
+			 free_days int null, validity int null, amount float null,status varchar(10) null );';
 			 conn.query(q, e=>{
 			 	if (e) {console.log('[IGNORE] err while creating table pricing_nations. Might Already Exist.');}
 			 	else
@@ -202,8 +202,8 @@ function addPricingByAdmin(req,res){
 			free_days = req.body.freedays,
 			validity = req.body.expiryspan,
 			amount = req.body.amount;
-		q = 'insert into pricing_nations(name,type,seller,start,expiry,currency,country,categories,nations_allowed,free_days,validity,amount)\
-		 values("'+name+'","'+type+'","'+seller+'","'+start+'","'+expiry+'","'+currency+'","'+country+'","'+categories+'",'+num_of_nations+','+free_days+','+validity+','+amount+');'
+		q = 'insert into pricing_nations(name,type,seller,start,expiry,currency,country,categories,nations_allowed,free_days,validity,amount,status)\
+		 values("'+name+'","'+type+'","'+seller+'","'+start+'","'+expiry+'","'+currency+'","'+country+'","'+categories+'",'+num_of_nations+','+free_days+','+validity+','+amount+',"active");'
 		conn.query(q, e=>{
 			if (e) {console.log('[ERR] err while inserting into pricing_nations');throw e;isErr=true;uniqueErr=true;}
 			else{
@@ -262,6 +262,7 @@ function viewPricing(req,res) {
 				'free_days':result[r]['free_days'],
 				'validity':result[r]['validity'],
 				'amount':result[r]['amount'],
+				'status':result[r]['status'],
 			};
 			list_localities.push(obj);
 			output['result'].push(obj);
@@ -292,6 +293,7 @@ function viewPricing(req,res) {
 				'free_days':result[r]['free_days'],
 				'validity':result[r]['validity'],
 				'amount':result[r]['amount'],
+				'status':result[r]['status'],
 			};
 
 			console.log('obj is '+ result[r]['name'] );
@@ -323,6 +325,7 @@ function viewPricing(req,res) {
 				'free_days':result[r]['free_days'],
 				'validity':result[r]['validity'],
 				'amount':result[r]['amount'],
+				'status':result[r]['status'],
 			};
 			list_states.push(obj);
 			output['result_alt2'].push(obj);
@@ -352,6 +355,7 @@ function viewPricing(req,res) {
 				'free_days':result[r]['free_days'],
 				'validity':result[r]['validity'],
 				'amount':result[r]['amount'],
+				'status':result[r]['status'],
 			};
 			list_nations.push(obj);
 			output['result_alt3'].push(obj);
@@ -366,6 +370,7 @@ function viewPricing(req,res) {
 
 }
 function res_send(res) {
+	
 	output['Success']='Y';
 	res.send(output);
 	output['result']=[];
@@ -399,6 +404,7 @@ function editPricingsGet(req,res) {
 				'free_days':result[0]['free_days'],
 				'validity':result[0]['validity'],
 				'amount':result[0]['amount'],
+				'status':result[0]['status'],
 			};
 			console.log('city_type was '+result[0]['city_type'])
 			output['result'].push(obj);
@@ -427,6 +433,7 @@ function editPricingsGet(req,res) {
 				'free_days':result[0]['free_days'],
 				'validity':result[0]['validity'],
 				'amount':result[0]['amount'],
+				'status':result[0]['status'],
 			};
 
 			output['result'].push(obj);
@@ -455,6 +462,7 @@ function editPricingsGet(req,res) {
 				'free_days':result[0]['free_days'],
 				'validity':result[0]['validity'],
 				'amount':result[0]['amount'],
+				'status':result[0]['status'],
 			};
 
 			output['result'].push(obj);
@@ -483,6 +491,7 @@ function editPricingsGet(req,res) {
 				'free_days':result[0]['free_days'],
 				'validity':result[0]['validity'],
 				'amount':result[0]['amount'],
+				'status':result[0]['status'],
 			};
 
 			output['result'].push(obj);
@@ -601,9 +610,43 @@ function updatePricings(req,res) {
 
 }
 
+
+function deactivatePricing(req,res) {
+	let id=req.body.id,plantype=req.body.plantype;
+	if(plantype=='local'){
+		q='update pricing_localities set status="inactive" where id='+id+';';
+		conn.query(q, e=>{
+			if(e) {console.error('[ERR] while deactivating pricing_localities');isErr=true;}
+			res_send(res);
+		})
+	}
+	else if(plantype=='city'){
+		q='update pricing_cities set status="inactive" where id='+id+';';
+		conn.query(q, e=>{
+			if(e) {console.error('[ERR] while deactivating pricing_cities');isErr=true;}
+			res_send(res);
+		})
+	}
+	else if(plantype=='national'){
+		q='update pricing_nations set status="inactive" where id='+id+';';
+		conn.query(q, e=>{
+			if(e) {console.error('[ERR] while deactivating pricing_nations');isErr=true;}
+			res_send(res);
+		})
+	}
+	else if(plantype=='state'){
+		q='update pricing_states set status="inactive" where id='+id+';';
+		conn.query(q, e=>{
+			if(e) {console.error('[ERR] while deactivating pricing_states');isErr=true;}
+			res_send(res);
+		})
+	}
+}
+
 module.exports = {
 	addAdmin: addPricingByAdmin,
 	view: viewPricing,
 	edit: editPricingsGet,
 	update: updatePricings,
+	deactivate: deactivatePricing,
 }

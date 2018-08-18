@@ -23,7 +23,9 @@ function campaigns_add(req,res){
 	if (count==0 && count2==0) {count++;count2++;} // call to database
 	let isErr = false;
 	
-		q = 'create table campaigns(id int primary key auto_increment, name varchar(100) unique null, short_description varchar(140) null,offer_code varchar(100) null, expiry varchar(100) null, offer_description varchar(140) null, long_description varchar(15000), image_address varchar(100) null );'
+		q = 'create table campaigns(id int primary key auto_increment, name varchar(100) unique null, short_description varchar(140) null,offer_code varchar(100) null, expiry varchar(100) null, offer_description varchar(140) null, long_description varchar(15000), image_address varchar(100) null,\
+	created timestamp(6) default current_timestamp(6) null,createdby varchar(100) null,modified timestamp(6) default current_timestamp(6) null, modifiedby varchar(100) null \
+	font varchar(20) null,background varchar(20) null,advertiser_id bigint(10) null );'
 		conn.query(q, (e)=>{
 			if (e) {console.log('[IGNORE] could not create campaigns table. Might be already created');}
 			else
@@ -37,39 +39,57 @@ function campaigns_add(req,res){
 	let name=req.body.name, 
 		shortdescription=req.body.shortdescription,
 		offer=req.body.offer,
-		expirydate=req.body.expirydate,
+		expirydate=req.body.expirydate,advertiser_id=req.body.advertiser_id,agent_phone=req.body.agent_phone,
 		offerdescription=req.body.offerdescription,
-		longdescription=req.body.longdescription;
+		longdescription=req.body.longdescription,font=req.body.font,back=req.body.background;
 	let img_add = null;
 	if (img_saved==true) {img_add='/public/image_campaigns/'+image_file;}
-	if (offer=='') {offer=null}
-	if (offerdescription=='') {offerdescription=null}
+	if (offer==undefined || offer==null || offer=='' || offer=='undefined') {offer=''}
+	if (offerdescription==undefined || offerdescription==null || offerdescription=='' || offerdescription=='undefined') {offerdescription=''}
+	q='select id from users2 where mobile="'+agent_phone+'";';
+	conn.query(q, (e, result22)=>{
+		if(e) throw e;
+		let agent_id=result22[0]['id'];
+		q='insert into campaigns(name,short_description,offer_code,expiry,offer_description,long_description,image_address,font,background,advertiser_id,createdby) values \
+		("'+name+'","'+shortdescription+'","'+offer+'","'+expirydate.substr(0,25)+'","'+offerdescription+'","'+longdescription +'","'+img_add+'","'+
+		font+'","'+back+ '","' +advertiser_id+'","'+agent_id+
+		'");';
+		img_saved=false;
+		conn.query(q, (e)=>{if (e) {console.log('[ERR] err while inserting into campaigns table. same name might already exist or something else.');isErr=true;throw e;}
+		else console.log('[SUCCESS] inserted into campaigns table');
+			res_send(res,isErr);
+		});
+		
+		isErr=false;
 
-	q='insert into campaigns(name,short_description,offer_code,expiry,offer_description,long_description,image_address) values \
-		("'+name+'","'+shortdescription+'","'+offer+'","'+expirydate.substr(0,25)+'","'+offerdescription+'","'+longdescription +'","'+img_add+'");';
-	img_saved=false;
-	conn.query(q, (e)=>{if (e) {console.log('[ERR] err while inserting into campaigns table. same name might already exist.');isErr=true;}
-	else console.log('[SUCCESS] inserted into campaigns table');
-		res_send(res,isErr);
-	});
+	})
+
 	
-	isErr=false;
 }
 function res_send(res,isErr) {
 	if (isErr==true) {output['Success']="N";}
 	else
 		output['Success']="Y";
 	res.send(output);
+	output['result']=[];
+	output['result_alt']=[];
 	isErr=false;
 }
 
-function campaigns_view(req,res){
+function campaigns_viewAdv(req,res){
 	let list=[], result_campaigns;
-	if (count==0 && count2==0) {count2++;count++;}
-	q = 'select * from campaigns limit 100;'
+	let adv_phone=req.body.adv_phone;
+	console.warn('adv phone : '+adv_phone)
+	q='select id from users2 where mobile="'+adv_phone+'";';
+	conn.query(q, (e,result00)=>{
+		if(e) throw e;
+		let adv_id_get=result00[0]['id'];
+		if (count==0 && count2==0) {count2++;count++;}
+	console.warn('adv id: '+adv_id_get)
+	q = 'select * from campaigns where advertiser_id="'+adv_id_get+'" or createdby='+adv_id_get+' ;';
 	conn.query(q, (e,result)=>{
 		if (e) {
-			console.log('[ERR] err while asking for campaigns list from database');
+			console.log('[ERR] err while asking for campaigns list from database');throw e;
 		}
 		else{
 			for (var i = 0; i < result.length; i++) {
@@ -82,6 +102,12 @@ function campaigns_view(req,res){
 					'offer_description':'',
 					'long_description':'',
 					'image_address':'',
+					'font':'',
+					'background':'',
+					'createdby':'',
+					'agent':'',
+					'advertiser':'',
+					'advertiser_id':'',
 				};
 				obj['id']=result[i]['id'];
 				obj['name']=result[i]['name'];
@@ -91,12 +117,110 @@ function campaigns_view(req,res){
 				obj['offer_description']=result[i]['offer_description'];
 				obj['long_description']=result[i]['long_description'];
 				obj['image_address']=result[i]['image_address'];
-				list.push(obj);
-				output['result'].push(obj);
+				obj['font']=result[i]['font'];
+				obj['background']=result[i]['background'];
+				obj['createdby']=result[i]['createdby'];
+				obj['advertiser_id']=result[i]['advertiser_id'];
+				console.warn('agent id ='+obj['createdby'])
+				q='select name from users2 where id='+obj['createdby']+';';
+				conn.query(q, (e,result33)=>{
+					if(e) throw e;
+					obj['agent']=result33[0]['name'];
+					q='select name from users2 where id='+adv_id_get+';';
+					conn.query(q, (e,result44)=>{
+						if(e) throw e;
+						obj['advertiser']=result44[0]['name'];
+						list.push(obj);
+						output['result'].push(obj);
+						console.warn('lenght '+result.length+' this length:'+output['result'].length)
+						if(output['result'].length==result.length){
+							console.warn(output['result'])
+							console.warn('thiiis')
+							done_link_campaigns_view(res);
+						}
+					})
+				})
+				
+				
 			}
-			done_link_campaigns_view(res);
+			
 		}
 	});
+	})
+	
+}
+
+function campaigns_view(req,res){
+	let list=[], result_campaigns;
+	let agent_phone=req.body.agent_mobile;
+	console.warn('agent phone : '+agent_phone)
+	q='select id from users2 where mobile="'+agent_phone+'";';
+	conn.query(q, (e,result00)=>{
+		if(e) throw e;
+		let agent_id_get=result00[0]['id'];
+		if (count==0 && count2==0) {count2++;count++;}
+	console.warn('agent id: '+agent_id_get)
+	q = 'select * from campaigns where createdby="'+agent_id_get+'";';
+	conn.query(q, (e,result)=>{
+		if (e) {
+			console.log('[ERR] err while asking for campaigns list from database');throw e;
+		}
+		else{
+			for (var i = 0; i < result.length; i++) {
+				let obj={
+					'id':0,
+					'name':'',
+					'short_description':'',
+					'offer_code':'',
+					'expiry':'',
+					'offer_description':'',
+					'long_description':'',
+					'image_address':'',
+					'font':'',
+					'background':'',
+					'createdby':'',
+					'agent':'',
+					'advertiser':'',
+					'advertiser_id':'',
+				};
+				obj['id']=result[i]['id'];
+				obj['name']=result[i]['name'];
+				obj['short_description']=result[i]['short_description'];
+				obj['offer_code']=result[i]['offer_code'];
+				obj['expiry']=result[i]['expiry'];
+				obj['offer_description']=result[i]['offer_description'];
+				obj['long_description']=result[i]['long_description'];
+				obj['image_address']=result[i]['image_address'];
+				obj['font']=result[i]['font'];
+				obj['background']=result[i]['background'];
+				obj['createdby']=result[i]['createdby'];
+				obj['advertiser_id']=result[i]['advertiser_id'];
+				console.warn('agent id ='+obj['createdby'])
+				q='select name from users2 where id='+obj['createdby']+';';
+				conn.query(q, (e,result33)=>{
+					if(e) throw e;
+					obj['agent']=result33[0]['name'];
+					q='select name from users2 where id='+obj['advertiser_id']+';';
+					conn.query(q, (e,result44)=>{
+						if(e) throw e;
+						obj['advertiser']=result44[0]['name'];
+						list.push(obj);
+						output['result'].push(obj);
+						console.warn('lenght '+result.length+' this length:'+output['result'].length)
+						if(output['result'].length==result.length){
+							console.warn(output['result'])
+							done_link_campaigns_view(res);
+						}
+					})
+				})
+				
+				
+			}
+			
+		}
+	});
+	})
+	
 }
 
 function localities_for_pricing_list(req,res){  
@@ -251,6 +375,79 @@ function campaigns_update(req,res){
  *on updation on campaigns, the previous iage is not removed for now
  */
 
+function viewMore(req,res) {
+	let name=req.body.name,advName=req.body.advName;
+	q='select * from campaigns where name="'+name+'";';
+	conn.query(q, (e,result)=>{
+		if(e) {console.error('[ERR] while retriving from campaigns for view-more as \n'+e)
+			isErr=true;
+			res_send(res);
+	}
+		else{
+			obj={
+				'id':result[0]['id'],
+				'name':result[0]['name'],
+				'short_description':result[0]['short_description'],
+				'offer_code':result[0]['offer_code'],
+				'expiry':result[0]['expiry'],
+				'offer_description':result[0]['offer_description'],
+				'long_description':result[0]['long_description'],
+				'image_address':result[0]['image_address'],
+				'created':result[0]['created'],
+				'modified':result[0]['modified'],
+				'createdby':result[0]['createdby'],
+				'modifiedby':result[0]['modifiedby'],
+				'background':result[0]['background'],
+				'font':result[0]['font'],
+			}
+			console.warn(obj);
+			output['result'].push(obj);
+			isErr=false;
+			res_send(res);
+		}
+	});
+}
+function campaignsAdvScreen(req,res) {
+	let adv_phone=req.body.advmobile;
+	q='select id from users2 where mobile="'+adv_phone+'";';
+	conn.query(q, (e, result0)=>{
+		if(e) throw e;
+		let adv_id=result0[0]['id'];
+		q='select * from campaigns where advertiser_id='+adv_id+';';
+		conn.query(q, (e, result1)=>{
+			if(e) throw e;
+			for(let i=0;i<result1.length;i++) {
+				let agent_id=result1[i]['createdby'];
+				q='select name from users2 where id='+agent_id+';';
+				conn.query(q, (e,result2)=>{
+					if(e) throw e;
+					let obj={
+						'id':result1[i]['id'],
+						'name':result1[i]['name'],
+						'short_description':result1[i]['short_description'],
+						'offer_code':result1[i]['offer_code'],
+						'expiry':result1[i]['expiry'],
+						'offer_description':result1[i]['offer_description'],
+						'long_description':result1[i]['long_description'],
+						'image_address':result1[i]['image_address'],
+						'font':result1[i]['font'],
+						'background':result1[i]['background'],
+						'createdby':result1[i]['createdby'],
+						'agent':result2[0]['name'],
+						'advertiser':'',
+						'advertiser_id':adv_id,
+					};
+					output['result'].push(obj);
+					if(output['result'].length==result1.length){
+						console.warn(output['result'])
+						done_link_campaigns_view(res);
+					}
+				})
+			}
+		})
+	})
+}
+
 
 module.exports = {
 	add: campaigns_add,
@@ -258,4 +455,7 @@ module.exports = {
 	edit:campaigns_edit,
 	update:campaigns_update,
 	pricing_list_fetch:localities_for_pricing_list,
+	viewMore:viewMore,
+	campaignsAdvScreen:campaignsAdvScreen,
+	campaigns_viewAdv:campaigns_viewAdv,
 };
